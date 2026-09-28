@@ -76,6 +76,15 @@ app.post('/api/loans/:id/return', (req, res) => {
   res.json({ ok: true })
 })
 
+
+app.post('/api/loans/:id/renew', (req, res) => {
+  const loan = loans.find((item) => item.id === Number(req.params.id) && !item.returnedAt)
+  if (!loan) return res.status(404).json({ error: 'Active loan not found.' })
+  loan.dueDate = req.body.dueDate
+  loan.renewals += 1
+  res.json(bookWithLoan(books.find((book) => book.id === loan.bookId)))
+})
+
 app.use((error, req, res, next) => {
   if (res.headersSent) return next(error)
   console.error(error)
