@@ -8,9 +8,7 @@ function addDays(date, days) {
 
 function daysLate(dueDate, now = new Date()) {
   const due = new Date(dueDate)
-  const dueDay = Date.UTC(due.getFullYear(), due.getMonth(), due.getDate())
-  const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
-  return Math.max(0, Math.round((today - dueDay) / DAY))
+  return Math.max(0, Math.ceil((now - due) / DAY))
 }
 
 function lateFee(dueDate, now = new Date()) {
