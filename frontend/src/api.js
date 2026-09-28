@@ -31,3 +31,12 @@ export async function borrowBook(bookId, member) {
 export async function returnBook(loanId) {
   return request(`/api/loans/${loanId}/return`, { method: 'POST' })
 }
+
+export async function renewLoan(loanId, dueDate) {
+  const book = await request(`/api/loans/${loanId}/renew`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ dueDate }),
+  })
+  return withDate(book)
+}
