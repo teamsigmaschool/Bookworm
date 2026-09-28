@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { borrowBook, getBooks, getOverdue, returnBook } from './api.js'
+import { borrowBook, getBooks, getOverdue, returnBook, renewLoan } from './api.js'
 import LoanBadge from './LoanBadge.jsx'
 
 export default function App() {
@@ -56,6 +56,18 @@ export default function App() {
     }
   }
 
+  async function handleRenew(book) {
+    const dueDate = new Date(book.loan.dueDate)
+    dueDate.setDate(dueDate.getDate() + 14)
+    try {
+      const renewed = await renewLoan(book.loan.id, dueDate.toISOString())
+      setBooks((current) => current.map((item) => item.id === book.id ? renewed : item))
+      setMessage(`Renewed ${book.title}.`)
+    } catch (error) {
+      setMessage(error.message)
+    }
+  }
+
   const visible = books.filter((book) =>
     book.title.toLowerCase().includes(search.toLowerCase()) ||
     book.author.toLowerCase().includes(search.toLowerCase()),
@@ -94,7 +106,10 @@ export default function App() {
                   <p className="author">{book.author}</p>
                   <LoanBadge loan={book.loan} />
                   {book.loan
-                    ? <button className="text-button" onClick={() => handleReturn(book)}>Return book</button>
+                    ? <>
+                        <button className="text-button" onClick={() => handleReturn(book)}>Return book</button>
+                        <button className="text-button" onClick={() => handleRenew(book)}>Renew loan</button>
+                      </>
                     : <button onClick={() => { setChosen(book.id); setMessage('') }}>Borrow book</button>}
                 </article>
               ))}
