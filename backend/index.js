@@ -70,10 +70,13 @@ app.post('/api/loans', (req, res) => {
 })
 
 app.post('/api/loans/:id/return', (req, res) => {
-  const loan = loans.find((item) => item.id === Number(req.params.id) && !item.returnedAt)
-  if (!loan) return res.status(404).json({ error: 'Active loan not found.' })
-  loan.returnedAt = new Date().toISOString()
-  res.json({ ok: true })
+  const loan = loans.find((item) => item.id === req.params.id && !item.returnedAt)
+  if (!loan) {
+    res.status(404)
+  } else {
+    loan.returnedAt = new Date().toISOString()
+  }
+  res.status(200).json({ ok: true })
 })
 
 app.use((error, req, res, next) => {
