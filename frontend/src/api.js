@@ -25,7 +25,7 @@ export async function borrowBook(bookId, member) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ bookId, member, source: 'desk' }),
   })
-  return withDate(book)
+  return book
 }
 
 export async function returnBook(loanId) {
