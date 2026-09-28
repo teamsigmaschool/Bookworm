@@ -19,7 +19,7 @@ app.get('/api/books', (req, res) => {
 })
 
 app.get('/api/loans/overdue', (req, res) => {
-  const overdue = loans.filter((loan) => !loan.returnedAt && daysLate(loan.dueDate) > 0)
+  const overdue = loans.filter((loan) => !loan.returnedAt && loan.dueDate < new Date())
   res.json(overdue.map((loan) => ({
     ...loan,
     book: books.find((book) => book.id === loan.bookId).title,
