@@ -68,6 +68,12 @@ export default function App() {
     }
   }
 
+  function selectBook(book) {
+    setChosen(book.id)
+    setMessage('')
+    document.getElementById('member').focus()
+  }
+
   const visible = books.filter((book) =>
     book.title.toLowerCase().includes(search.toLowerCase()) ||
     book.author.toLowerCase().includes(search.toLowerCase()),
@@ -76,70 +82,81 @@ export default function App() {
 
   return (
     <>
-      <header>
-        <p className="wordmark">Bookworm<span>.</span></p>
-        <p>School library lending desk</p>
+      <header className="site-header">
+        <div className="brand">
+          <span className="brand-name">Bookworm</span>
+          <span className="brand-rule" aria-hidden="true"></span>
+          <span className="brand-description">School library</span>
+        </div>
+        <span className="header-label">CIRCULATION DESK</span>
       </header>
       <main>
-        <section className="intro">
+        <div className="page-heading">
           <div>
-            <p className="eyebrow">THE SHELF</p>
-            <h1>Find a good book.</h1>
-            <p>Search the shelf, borrow a title, or check what is overdue.</p>
+            <h1>The catalogue</h1>
+            <p>Find a book, check its loan, or send it home with a reader.</p>
           </div>
-          <div className="counts">
-            <strong>{books.length}</strong><span>books</span>
-            <strong>{overdue.length}</strong><span>overdue</span>
-          </div>
-        </section>
+          <p className="collection-note">{books.length} books in the collection</p>
+        </div>
 
-        <div className="layout">
-          <section>
-            <label htmlFor="search">Search title or author</label>
-            <input id="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Try The Hobbit" />
-            {loading ? <p>Loading books...</p> : null}
-            <div className="book-grid">
+        <div className="workbench">
+          <section className="catalogue" aria-labelledby="catalogue-heading">
+            <div className="catalogue-top">
+              <h2 id="catalogue-heading">Browse the shelves</h2>
+              <span>{visible.length} titles shown</span>
+            </div>
+            <label htmlFor="search">Search by title or author</label>
+            <input id="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search the catalogue" />
+            {loading ? <p className="shelf-message">Loading the catalogue...</p> : null}
+            {!loading && visible.length === 0 ? <p className="shelf-message">No books match that search. Try another title or author.</p> : null}
+            <div className="shelf-list">
               {visible.map((book) => (
-                <article className="book" key={book.id}>
-                  <span className="book-mark">{book.title.charAt(0)}</span>
-                  <h2>{book.title}</h2>
-                  <p className="author">{book.author}</p>
+                <article className={chosen === book.id ? 'book-row selected' : 'book-row'} key={book.id}>
+                  <span className="shelf-number">No. {book.id}</span>
+                  <div className="book-identity">
+                    <h3>{book.title}</h3>
+                    <p>{book.author}</p>
+                  </div>
                   <LoanBadge loan={book.loan} />
                   {book.loan
-                    ? <>
-                        <button className="text-button" onClick={() => handleReturn(book)}>Return book</button>
-                        <button className="text-button" onClick={() => handleRenew(book)}>Renew loan</button>
-                      </>
-                    : <button onClick={() => { setChosen(book.id); setMessage('') }}>Borrow book</button>}
+                    ? <div className="row-actions">
+                        <button className="row-button secondary" onClick={() => handleReturn(book)}>Return book</button>
+                        <button className="row-button secondary" onClick={() => handleRenew(book)}>Renew loan</button>
+                      </div>
+                    : <button className="row-button" onClick={() => selectBook(book)}>Borrow book</button>}
                 </article>
               ))}
             </div>
-            {!loading && visible.length === 0 ? <p>No books match that search.</p> : null}
           </section>
-          <aside>
-            <div className="panel">
-              <p className="eyebrow">LENDING DESK</p>
-              <h2>Borrow a book</h2>
-              {chosenBook ? <p>Selected: <strong>{chosenBook.title}</strong></p> : <p>Pick an available book from the shelf.</p>}
+          <aside className="desk">
+            <section className="checkout-slip" aria-labelledby="checkout-heading">
+              <div className="slip-top"><span>BOOKWORM</span><span>LOAN SLIP</span></div>
+              <h2 id="checkout-heading">Borrow a book</h2>
+              <p className="selected-title">{chosenBook ? chosenBook.title : 'Choose a book from the catalogue.'}</p>
+              <p className="selected-author">{chosenBook ? chosenBook.author : 'Your selection will appear here.'}</p>
+              <div className="slip-divider"></div>
               <form onSubmit={handleBorrow}>
                 <label htmlFor="member">Member name</label>
-                <input id="member" value={member} onChange={(event) => setMember(event.target.value)} maxLength="60" />
-                <button disabled={chosen === null}>Confirm loan</button>
+                <input id="member" value={member} onChange={(event) => setMember(event.target.value)} maxLength="60" placeholder="Who is borrowing?" />
+                <p className="loan-term">Loans are due 14 days after borrowing.</p>
+                <button className="issue-button" disabled={chosen === null}>Confirm loan</button>
               </form>
               {message ? <p role="status" className="message">{message}</p> : null}
-            </div>
-            <div className="overdue">
-              <p className="eyebrow">NEEDS A NUDGE</p>
-              <h2>Overdue loans</h2>
-              {overdue.length === 0 ? <p>Nothing overdue.</p> : null}
+            </section>
+            <section className="overdue" aria-labelledby="overdue-heading">
+              <div className="overdue-heading">
+                <h2 id="overdue-heading">Overdue loans</h2>
+                <span>{overdue.length}</span>
+              </div>
+              {overdue.length === 0 ? <p className="no-overdue">All loans are on time.</p> : null}
               {overdue.map((loan) => (
                 <div className="overdue-row" key={loan.id}>
                   <strong>{loan.book}</strong>
                   <span>{loan.member} · {loan.daysLate} days late</span>
-                  <span>RM {loan.fee.toFixed(2)}</span>
+                  <b>RM {loan.fee.toFixed(2)}</b>
                 </div>
               ))}
-            </div>
+            </section>
           </aside>
         </div>
       </main>
